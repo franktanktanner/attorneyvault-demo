@@ -93,7 +93,7 @@ const LED_PROGRESSIONS: LedKey[][] = [
   ["forest", "forest", "forest"],
 ];
 
-export function VaultDoor({ state, onUnlockComplete, className }: VaultDoorProps) {
+export function VaultDoorSVG({ state, onUnlockComplete, className }: VaultDoorProps) {
   const handleControls = useAnimationControls();
   const tickControls = useAnimationControls();
   const arcControls = useAnimationControls();

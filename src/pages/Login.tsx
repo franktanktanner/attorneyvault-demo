@@ -9,9 +9,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
-  VaultDoor,
+  VaultDoor3D,
   type VaultDoorState,
-} from "../components/vault/VaultDoor";
+} from "../components/vault/VaultDoor3D";
 import { cn } from "../lib/utils";
 
 type UnlockState = VaultDoorState;
@@ -228,13 +228,16 @@ export default function Login() {
         }}
         style={{ transformOrigin: "center" }}
       >
-        <div className="relative flex-1 lg:flex-none lg:w-[65%] flex flex-col items-center justify-center py-8 lg:py-0 min-h-[40vh] lg:min-h-screen">
-          <VaultDoor
+        <div
+          className="relative flex-1 lg:flex-none lg:w-[65%] min-h-[40vh] lg:min-h-screen"
+          style={{ backgroundColor: "#050505" }}
+        >
+          <VaultDoor3D
             state={unlockState}
-            className="w-80 h-80 md:w-[480px] md:h-[480px] lg:w-[640px] lg:h-[640px]"
+            className="absolute inset-0"
           />
 
-          <div className="mt-6 h-10 flex items-center justify-center px-6">
+          <div className="pointer-events-none absolute bottom-[9%] left-0 right-0 h-10 flex items-center justify-center px-6 z-10">
             <AnimatePresence mode="wait">
               {currentStatus ? (
                 <motion.span
