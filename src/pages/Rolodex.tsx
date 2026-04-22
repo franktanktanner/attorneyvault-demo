@@ -130,11 +130,11 @@ const STATUS_OPTIONS: AttorneyStatus[] = [
 ];
 
 const OFFICES: BbbOffice[] = [
-  "San Jose",
+  "San Jose HQ",
   "Oakland",
-  "San Francisco",
+  "Redwood City",
   "Los Angeles",
-  "Orange County",
+  "Santa Ana",
   "San Diego",
 ];
 

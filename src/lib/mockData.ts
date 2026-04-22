@@ -14,11 +14,11 @@ export type AttorneyStatus =
   | "reactivation";
 
 export type BbbOffice =
-  | "San Jose"
+  | "San Jose HQ"
   | "Oakland"
-  | "San Francisco"
+  | "Redwood City"
   | "Los Angeles"
-  | "Orange County"
+  | "Santa Ana"
   | "San Diego";
 
 export interface Attorney {
@@ -114,35 +114,91 @@ const initials = (name: string) =>
 const cityToCounty: Record<string, string> = {
   "San Jose": "Santa Clara",
   "Santa Clara": "Santa Clara",
+  Milpitas: "Santa Clara",
+  Sunnyvale: "Santa Clara",
+  "Mountain View": "Santa Clara",
+  Cupertino: "Santa Clara",
+  "Palo Alto": "Santa Clara",
   Oakland: "Alameda",
   Berkeley: "Alameda",
+  Alameda: "Alameda",
+  Hayward: "Alameda",
+  Fremont: "Alameda",
+  "San Leandro": "Alameda",
   "Redwood City": "San Mateo",
   "San Mateo": "San Mateo",
+  "San Francisco": "San Francisco",
+  "Daly City": "San Mateo",
+  Burlingame: "San Mateo",
+  Millbrae: "San Mateo",
   "Los Angeles": "Los Angeles",
   "Beverly Hills": "Los Angeles",
   Pasadena: "Los Angeles",
   "Long Beach": "Los Angeles",
+  Glendale: "Los Angeles",
+  Burbank: "Los Angeles",
+  "Santa Monica": "Los Angeles",
+  "Culver City": "Los Angeles",
+  Inglewood: "Los Angeles",
+  Torrance: "Los Angeles",
   "Santa Ana": "Orange",
   Irvine: "Orange",
+  Anaheim: "Orange",
+  "Huntington Beach": "Orange",
+  Orange: "Orange",
+  "Costa Mesa": "Orange",
+  Fullerton: "Orange",
   "San Diego": "San Diego",
   "La Jolla": "San Diego",
+  "Chula Vista": "San Diego",
+  Carlsbad: "San Diego",
+  Oceanside: "San Diego",
+  Escondido: "San Diego",
 };
 
 const cityToOffice: Record<string, BbbOffice> = {
-  "San Jose": "San Jose",
-  "Santa Clara": "San Jose",
+  "San Jose": "San Jose HQ",
+  "Santa Clara": "San Jose HQ",
+  Milpitas: "San Jose HQ",
+  Sunnyvale: "San Jose HQ",
+  "Mountain View": "San Jose HQ",
+  Cupertino: "San Jose HQ",
+  "Palo Alto": "San Jose HQ",
   Oakland: "Oakland",
   Berkeley: "Oakland",
-  "Redwood City": "San Francisco",
-  "San Mateo": "San Francisco",
+  Alameda: "Oakland",
+  Hayward: "Oakland",
+  Fremont: "Oakland",
+  "San Leandro": "Oakland",
+  "Redwood City": "Redwood City",
+  "San Mateo": "Redwood City",
+  "San Francisco": "Redwood City",
+  "Daly City": "Redwood City",
+  Burlingame: "Redwood City",
+  Millbrae: "Redwood City",
   "Los Angeles": "Los Angeles",
   "Beverly Hills": "Los Angeles",
   Pasadena: "Los Angeles",
   "Long Beach": "Los Angeles",
-  "Santa Ana": "Orange County",
-  Irvine: "Orange County",
+  Glendale: "Los Angeles",
+  Burbank: "Los Angeles",
+  "Santa Monica": "Los Angeles",
+  "Culver City": "Los Angeles",
+  Inglewood: "Los Angeles",
+  Torrance: "Los Angeles",
+  "Santa Ana": "Santa Ana",
+  Irvine: "Santa Ana",
+  Anaheim: "Santa Ana",
+  "Huntington Beach": "Santa Ana",
+  Orange: "Santa Ana",
+  "Costa Mesa": "Santa Ana",
+  Fullerton: "Santa Ana",
   "San Diego": "San Diego",
   "La Jolla": "San Diego",
+  "Chula Vista": "San Diego",
+  Carlsbad: "San Diego",
+  Oceanside: "San Diego",
+  Escondido: "San Diego",
 };
 
 const daysAgo = (days: number) => {
@@ -837,16 +893,325 @@ function volumeForTier(tier: AttorneyTier, refs: number, avg: number): number {
   return Math.min(max, Math.max(min, computed));
 }
 
-export const attorneys: Attorney[] = SEEDS.map((seed, index) => {
+// ============================================================================
+// Generated seeds. Deterministic expansion to reach 247 total records across
+// the six Bad Boys offices. Pools below do not overlap with the curated seeds.
+// ============================================================================
+
+const GEN_FIRSTS: string[] = [
+  "Aaron", "Abigail", "Adrian", "Alan", "Amir", "Andrea", "Angela", "Arman",
+  "Audrey", "Beatrice", "Blaise", "Bridget", "Camila", "Carlos", "Caroline",
+  "Cecilia", "Damian", "Daria", "Delia", "Derek", "Diana", "Diego", "Dominic",
+  "Edmund", "Elaine", "Elias", "Emilia", "Esteban", "Evangeline", "Farhan",
+  "Fiona", "Florian", "Gabriel", "Georgia", "Greta", "Hannah", "Horace",
+  "Inez", "Isaac", "Isabelle", "Jacinta", "Jasper", "Javier", "Jemma",
+  "Juliana", "Kai", "Karim", "Katya", "Kiera", "Landon", "Lara", "Leo",
+  "Liliana", "Lucas", "Luisa", "Mariana", "Maxwell", "Miriam", "Nathaniel",
+  "Nia", "Nolan", "Octavia", "Oscar", "Paola", "Penelope", "Pierre", "Quincy",
+  "Rafaela", "Remy", "Renata", "Rohan", "Rosalie", "Sadie", "Santiago",
+  "Serena", "Simeon", "Sofia", "Soren", "Tariq", "Thea", "Ulises", "Valeria",
+  "Vera", "Vikram", "Wesley", "Willa", "Yuki", "Zara", "Bastien", "Cedric",
+  "Donovan", "Elise", "Ezra", "Fatima", "Hadi", "Iliana", "Jovan", "Keaton",
+  "Leandra", "Mateo", "Natalia", "Otto", "Percival", "Quentin", "Soraya",
+];
+
+const GEN_LASTS: string[] = [
+  "Aguilar", "Anderson", "Baldwin", "Barnett", "Baxter", "Bellamy",
+  "Blackwood", "Boone", "Bradshaw", "Buchanan", "Calloway", "Cameron",
+  "Castellanos", "Chandler", "Colson", "Crawford", "Daugherty", "Delgado",
+  "Devereaux", "Donnelly", "Dupree", "Easton", "Elliott", "Espinosa",
+  "Fairchild", "Finnegan", "Galindo", "Gillespie", "Goldberg", "Hargrove",
+  "Hathaway", "Henderson", "Hollander", "Ibarra", "Jameson", "Kaminski",
+  "Kearney", "Lancaster", "Laurent", "Mancini", "Marchetti", "Marquez",
+  "McKinney", "Mercado", "Navarro", "Ochoa", "Padilla", "Pemberton",
+  "Prescott", "Quintana", "Radcliffe", "Salinas", "Schroeder", "Sheridan",
+  "Solano", "Sullivan", "Takagi", "Trevino", "Valenzuela", "Villanueva",
+  "Waterston", "Whittaker", "Winslow", "Ybarra", "Zabala", "Zimmerman",
+  "Amador", "Beaumont", "Calderon", "Fontaine", "Galloway", "Holloway",
+  "Isaacson", "Kasparian", "Lovato", "Montoya", "Nakashima", "Ostrowski",
+  "Pendergrass", "Quintero", "Valdez", "Washington", "Yeager", "Zeller",
+  "Abernathy", "Bueno", "Chastain", "Dempsey", "Escalante", "Fujimori",
+  "Hollis",
+];
+
+const GEN_ASSISTANTS: string[] = [
+  "Amira Park", "Beatrice Cole", "Calvin Reyes", "Dorian Hayes",
+  "Elise Barber", "Finn Dolan", "Grace Flores", "Henry Bose", "Isla Jensen",
+  "Jude Keller", "Karla Medina", "Lena Pires", "Marco Saldana", "Nora Peak",
+  "Otis Quinn", "Paige Cross", "Rhea Vo", "Silas Novak", "Tanvi Rao",
+  "Una Baker", "Vivek Nair", "Wren Mosley", "Yusuf Amin", "Zara Fox",
+  "Adrian Coates", "Brianna Sato", "Cecil Duran", "Delia Hahn", "Evan Troy",
+  "Fiona Doss", "Greta Shaw", "Harrison Ott", "Ines Kim", "Jeremy Boyle",
+  "Kinsey Park", "Lio Wells", "Mira Tate", "Nate Vance", "Odile Beck",
+  "Paulina Ames",
+];
+
+const CITY_POOLS: Record<BbbOffice, string[]> = {
+  "San Jose HQ": [
+    "San Jose", "Santa Clara", "Milpitas", "Sunnyvale", "Mountain View",
+    "Cupertino", "Palo Alto",
+  ],
+  Oakland: ["Oakland", "Berkeley", "Alameda", "Hayward", "Fremont", "San Leandro"],
+  "Redwood City": [
+    "Redwood City", "San Mateo", "San Francisco", "Daly City", "Burlingame",
+    "Millbrae",
+  ],
+  "Los Angeles": [
+    "Los Angeles", "Beverly Hills", "Pasadena", "Long Beach", "Glendale",
+    "Burbank", "Santa Monica", "Culver City", "Inglewood", "Torrance",
+  ],
+  "Santa Ana": [
+    "Santa Ana", "Irvine", "Anaheim", "Huntington Beach", "Orange",
+    "Costa Mesa", "Fullerton",
+  ],
+  "San Diego": [
+    "San Diego", "La Jolla", "Chula Vista", "Carlsbad", "Oceanside",
+    "Escondido",
+  ],
+};
+
+// 25-slot weighted office cycle. LA 28%, SJ 20%, OAK 16%, RWC 12%, SA 12%, SD 12%.
+const OFFICE_CYCLE: BbbOffice[] = [
+  "Los Angeles", "San Jose HQ", "Oakland", "Los Angeles", "Redwood City",
+  "Santa Ana", "San Diego", "Los Angeles", "San Jose HQ", "Oakland",
+  "Los Angeles", "Santa Ana", "Redwood City", "San Diego", "Los Angeles",
+  "San Jose HQ", "Oakland", "Los Angeles", "Santa Ana", "San Diego",
+  "San Jose HQ", "Redwood City", "Oakland", "Los Angeles", "San Jose HQ",
+];
+
+const FIRM_TEMPLATES: Array<(last: string, last2: string) => string> = [
+  (l) => `${l} Law`,
+  (l) => `${l} Criminal Defense`,
+  (l) => `${l} & Associates`,
+  (l) => `${l} Law Offices`,
+  (l) => `${l} Defense Group`,
+  (l, l2) => `${l} & ${l2}`,
+  (l) => `${l} Trial Advocates`,
+  (l) => `${l} Law Firm`,
+  (l) => `${l} Defense Partners`,
+  (l) => `${l} Legal Group`,
+];
+
+const PRACTICE_BY_TIER: Record<AttorneyTier, string[]> = {
+  platinum: [
+    "Federal", "White Collar", "Homicide", "Violent Crimes", "Appeals",
+    "Securities", "RICO", "Asset Forfeiture",
+  ],
+  gold: [
+    "White Collar", "Federal", "Violent Crimes", "Sex Crimes",
+    "Drug Distribution", "DUI Manslaughter", "Domestic Violence", "Juvenile",
+  ],
+  silver: [
+    "DUI", "Drug Possession", "Domestic Violence", "Theft", "Fraud",
+    "Weapons", "Assault", "Traffic Crimes",
+  ],
+  bronze: [
+    "DUI", "Drug Possession", "Traffic Crimes", "Probation Violations",
+    "Petty Theft", "Disorderly Conduct",
+  ],
+  prospect: [
+    "Federal", "White Collar", "Violent Crimes", "Celebrity Defense",
+    "High Profile", "Immigration Crimes",
+  ],
+  dormant: [
+    "White Collar", "Appeals", "Federal", "DUI", "Drug Possession",
+    "Violent Crimes",
+  ],
+};
+
+const TAG_BY_TIER: Record<AttorneyTier, string[]> = {
+  platinum: [
+    "Trusted Circle", "Top Referrer", "VIP", "Federal Courts",
+    "Board Referred",
+  ],
+  gold: [
+    "Volume Referrer", "Top Referrer", "Federal Courts", "Trial Heavy",
+    "Appellate Specialist",
+  ],
+  silver: ["Volume Referrer", "New Relationship", "Warm Pipeline"],
+  bronze: ["Early Career", "New Relationship", "Warm Pipeline"],
+  prospect: ["Targeted Introduction", "New Relationship", "High Value"],
+  dormant: [
+    "Reactivation", "Former Trusted Circle", "Former Volume Referrer",
+  ],
+};
+
+const STATUS_BY_TIER: Record<AttorneyTier, AttorneyStatus[]> = {
+  platinum: ["active"],
+  gold: ["active"],
+  silver: ["active", "warm"],
+  bronze: ["warm", "cold"],
+  prospect: ["reactivation", "cold", "warm"],
+  dormant: ["dormant", "reactivation"],
+};
+
+const YEARS_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [18, 35],
+  gold: [12, 25],
+  silver: [6, 16],
+  bronze: [2, 8],
+  prospect: [10, 25],
+  dormant: [20, 38],
+};
+
+const REFS_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [40, 120],
+  gold: [15, 50],
+  silver: [5, 20],
+  bronze: [1, 8],
+  prospect: [0, 2],
+  dormant: [10, 50],
+};
+
+const AVGBOND_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [15000, 50000],
+  gold: [8000, 25000],
+  silver: [3000, 12000],
+  bronze: [1000, 5000],
+  prospect: [0, 5000],
+  dormant: [3000, 15000],
+};
+
+const CONV_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [0.7, 0.85],
+  gold: [0.55, 0.75],
+  silver: [0.4, 0.6],
+  bronze: [0.25, 0.45],
+  prospect: [0.1, 0.3],
+  dormant: [0.4, 0.7],
+};
+
+const LASTREF_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [1, 60],
+  gold: [2, 90],
+  silver: [7, 180],
+  bronze: [30, 365],
+  prospect: [999, 999],
+  dormant: [365, 900],
+};
+
+const LASTCONTACT_BY_TIER: Record<AttorneyTier, [number, number]> = {
+  platinum: [1, 30],
+  gold: [2, 45],
+  silver: [5, 60],
+  bronze: [10, 90],
+  prospect: [7, 30],
+  dormant: [120, 300],
+};
+
+// Target totals: Platinum 12, Gold 35, Silver 78, Bronze 62, Prospect 34,
+// Dormant 26. Curated seeds already cover 5/10/15/5/3/2 so we add the rest.
+const GEN_COUNTS: Record<AttorneyTier, number> = {
+  platinum: 7,
+  gold: 25,
+  silver: 63,
+  bronze: 57,
+  prospect: 31,
+  dormant: 24,
+};
+
+const GEN_TIER_SEQUENCE: AttorneyTier[] = [
+  ...Array(GEN_COUNTS.platinum).fill("platinum"),
+  ...Array(GEN_COUNTS.gold).fill("gold"),
+  ...Array(GEN_COUNTS.silver).fill("silver"),
+  ...Array(GEN_COUNTS.bronze).fill("bronze"),
+  ...Array(GEN_COUNTS.prospect).fill("prospect"),
+  ...Array(GEN_COUNTS.dormant).fill("dormant"),
+] as AttorneyTier[];
+
+function seededUnit(seed: number): number {
+  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function seededInt(min: number, max: number, seed: number): number {
+  return Math.floor(min + seededUnit(seed) * (max - min + 1));
+}
+
+function seededFloat(min: number, max: number, seed: number): number {
+  return min + seededUnit(seed) * (max - min);
+}
+
+function uniqueSlice<T>(pool: T[], count: number, i: number, step: number): T[] {
+  const out: T[] = [];
+  let k = 0;
+  while (out.length < count && k < pool.length * 2) {
+    const item = pool[((i * step) + k * 7) % pool.length];
+    if (!out.includes(item)) out.push(item);
+    k += 1;
+  }
+  return out;
+}
+
+function buildGeneratedSeeds(): Seed[] {
+  const seeds: Seed[] = [];
+  for (let i = 0; i < GEN_TIER_SEQUENCE.length; i++) {
+    const tier = GEN_TIER_SEQUENCE[i];
+    const first = GEN_FIRSTS[(i * 17 + 3) % GEN_FIRSTS.length];
+    const last = GEN_LASTS[(i * 31 + 11) % GEN_LASTS.length];
+    const last2 = GEN_LASTS[(i * 19 + 47) % GEN_LASTS.length];
+    const name = `${first} ${last}`;
+    const office = OFFICE_CYCLE[i % OFFICE_CYCLE.length];
+    const cityPool = CITY_POOLS[office];
+    const city = cityPool[(i * 3 + 1) % cityPool.length];
+    const firm = FIRM_TEMPLATES[i % FIRM_TEMPLATES.length](last, last2);
+    const assistant = GEN_ASSISTANTS[(i * 11 + 4) % GEN_ASSISTANTS.length];
+    const areaCount =
+      tier === "platinum" || tier === "gold" ? 3 : tier === "prospect" ? 2 : 2;
+    const areas = uniqueSlice(PRACTICE_BY_TIER[tier], areaCount, i, 5);
+    const statusPool = STATUS_BY_TIER[tier];
+    const status = statusPool[(i * 3 + 1) % statusPool.length];
+    const tagPool = TAG_BY_TIER[tier];
+    const tagCount = tier === "platinum" ? 2 : tier === "gold" ? 1 + (i % 2) : i % 2;
+    const tags = tagCount === 0 ? [] : uniqueSlice(tagPool, tagCount, i, 3);
+    const [yMin, yMax] = YEARS_BY_TIER[tier];
+    const years = seededInt(yMin, yMax, i + 1);
+    const [rMin, rMax] = REFS_BY_TIER[tier];
+    const refs = seededInt(rMin, rMax, i + 100);
+    const [aMin, aMax] = AVGBOND_BY_TIER[tier];
+    const avgBond = Math.round(seededFloat(aMin, aMax, i + 200) / 500) * 500;
+    const [cMin, cMax] = CONV_BY_TIER[tier];
+    const conv = Math.round(seededFloat(cMin, cMax, i + 300) * 100) / 100;
+    const [lrMin, lrMax] = LASTREF_BY_TIER[tier];
+    const lastReferralDays =
+      tier === "prospect" ? 999 : seededInt(lrMin, lrMax, i + 400);
+    const [lcMin, lcMax] = LASTCONTACT_BY_TIER[tier];
+    const lastContactDays = seededInt(lcMin, lcMax, i + 500);
+
+    seeds.push({
+      name,
+      firm,
+      city,
+      areas,
+      tier,
+      years,
+      assistant,
+      tags,
+      status,
+      lastReferralDays,
+      lastContactDays,
+      refs,
+      avgBond,
+      conv,
+    });
+  }
+  return seeds;
+}
+
+const ALL_SEEDS: Seed[] = [...SEEDS, ...buildGeneratedSeeds()];
+
+export const attorneys: Attorney[] = ALL_SEEDS.map((seed, index) => {
   const county = cityToCounty[seed.city] ?? "Unknown";
-  const office = cityToOffice[seed.city] ?? "San Jose";
+  const office = cityToOffice[seed.city] ?? "San Jose HQ";
   const lifetimeVolume = volumeForTier(seed.tier, seed.refs, seed.avgBond);
   const areaCode =
-    office === "San Jose" || office === "Oakland" || office === "San Francisco"
+    office === "San Jose HQ" ||
+    office === "Oakland" ||
+    office === "Redwood City"
       ? 408 + (index % 6) * 3
       : office === "Los Angeles"
       ? 213 + (index % 3) * 110
-      : office === "Orange County"
+      : office === "Santa Ana"
       ? 714
       : 619;
   const phone = `(${areaCode}) ${String(200 + (index * 37) % 799).padStart(3, "0")}-${String(1000 + (index * 113) % 8999).padStart(4, "0")}`;
