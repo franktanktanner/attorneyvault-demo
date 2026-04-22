@@ -9,45 +9,25 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
-  VaultDoor3D,
-  type VaultDoorState,
-} from "../components/vault/VaultDoor3D";
+  CinematicVault,
+  type CinematicVaultState,
+} from "../components/vault/CinematicVault";
 import { cn } from "../lib/utils";
 
-type UnlockState = VaultDoorState;
+type UnlockState = CinematicVaultState;
 
 const EASE_VAULT: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 const EASE_VAULT_SLOW: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const SEQUENCE_MS = {
-  verifying: 800,
-  decrypting: 1600,
-  decryptingSwap: 1300,
-  opening: 800,
-  openingTextDelay: 400,
-  unlocked: 400,
+  verifying: 600,
+  decrypting: 1000,
+  opening: 1200,
+  unlocked: 300,
 };
-const SEQUENCE_TOTAL =
-  SEQUENCE_MS.verifying +
-  SEQUENCE_MS.decrypting +
-  SEQUENCE_MS.opening +
-  SEQUENCE_MS.unlocked;
 const PRE_UNLOCK_MS =
   SEQUENCE_MS.verifying + SEQUENCE_MS.decrypting + SEQUENCE_MS.opening;
-
-type StatusKey =
-  | null
-  | "verifying"
-  | "decrypting-1"
-  | "decrypting-2"
-  | "opening-unsealed";
-
-const STATUS_COPY: Record<Exclude<StatusKey, null>, string> = {
-  verifying: "VERIFYING OPERATOR CLEARANCE",
-  "decrypting-1": "DECRYPTING VAULT · AES-256",
-  "decrypting-2": "TUMBLERS ENGAGED · 5 OF 5",
-  "opening-unsealed": "VAULT UNSEALED",
-};
+const SEQUENCE_TOTAL = PRE_UNLOCK_MS + SEQUENCE_MS.unlocked;
 
 interface DarkInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -116,11 +96,31 @@ const itemVariants: Variants = {
 export default function Login() {
   const navigate = useNavigate();
   const [unlockState, setUnlockState] = useState<UnlockState>("idle");
-  const [statusKey, setStatusKey] = useState<StatusKey>(null);
+  const [videoReady, setVideoReady] = useState(false);
   const [operatorId, setOperatorId] = useState("CJS-0001");
   const [vaultKey, setVaultKey] = useState("demomaster2026");
   const timeoutsRef = useRef<number[]>([]);
   const startedRef = useRef(false);
+
+  useEffect(() => {
+    const probe = document.createElement("video");
+    probe.src = "/videos/vault-idle.mp4";
+    probe.preload = "auto";
+    probe.muted = true;
+    probe.playsInline = true;
+
+    const ready = () => setVideoReady(true);
+    probe.addEventListener("canplaythrough", ready, { once: true });
+    probe.addEventListener("loadeddata", ready, { once: true });
+
+    const fallback = window.setTimeout(ready, 1500);
+
+    return () => {
+      probe.removeEventListener("canplaythrough", ready);
+      probe.removeEventListener("loadeddata", ready);
+      window.clearTimeout(fallback);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -138,30 +138,15 @@ export default function Login() {
     };
 
     setUnlockState("verifying");
-    setStatusKey("verifying");
 
     schedule(SEQUENCE_MS.verifying, () => {
       setUnlockState("decrypting");
-      setStatusKey("decrypting-1");
-    });
-    schedule(SEQUENCE_MS.verifying + SEQUENCE_MS.decryptingSwap, () => {
-      setStatusKey("decrypting-2");
     });
     schedule(SEQUENCE_MS.verifying + SEQUENCE_MS.decrypting, () => {
       setUnlockState("opening");
-      setStatusKey(null);
     });
-    schedule(
-      SEQUENCE_MS.verifying +
-        SEQUENCE_MS.decrypting +
-        SEQUENCE_MS.openingTextDelay,
-      () => {
-        setStatusKey("opening-unsealed");
-      }
-    );
     schedule(PRE_UNLOCK_MS, () => {
       setUnlockState("unlocked");
-      setStatusKey(null);
     });
     schedule(SEQUENCE_TOTAL, () => {
       navigate("/vault");
@@ -178,16 +163,8 @@ export default function Login() {
   };
 
   const isSequencing = unlockState !== "idle";
-  const currentStatus = statusKey ? STATUS_COPY[statusKey] : null;
-
-  const pushInScale =
-    unlockState === "idle"
-      ? 1
-      : unlockState === "unlocked"
-      ? 1
-      : 1.02;
-  const pushInDuration =
-    unlockState === "unlocked" ? 0.4 : PRE_UNLOCK_MS / 1000;
+  const rightPanelFading =
+    unlockState === "opening" || unlockState === "unlocked";
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-vault-obsidian text-vault-paper relative">
@@ -199,71 +176,48 @@ export default function Login() {
             "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\"><filter id=\"n\"><feTurbulence baseFrequency=\"0.9\" numOctaves=\"2\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/></filter><rect width=\"200\" height=\"200\" filter=\"url(%23n)\"/></svg>')",
         }}
       />
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          left: "-200px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "1300px",
-          height: "1300px",
-          background:
-            "radial-gradient(circle, rgba(26, 61, 46, 0.08) 0%, rgba(26, 61, 46, 0) 60%)",
-        }}
-      />
 
       <div
         aria-hidden
-        className="hidden lg:block absolute top-1 bottom-1 w-px bg-vault-graphite opacity-30 pointer-events-none z-10"
+        className="hidden lg:block absolute top-4 bottom-4 w-px bg-vault-graphite opacity-30 pointer-events-none z-10"
         style={{ left: "65%" }}
       />
 
-      <motion.div
-        className="relative h-full w-full flex flex-col lg:flex-row"
-        animate={{ scale: pushInScale }}
-        transition={{
-          duration: pushInDuration,
-          ease: unlockState === "unlocked" ? EASE_VAULT : "linear",
-        }}
-        style={{ transformOrigin: "center" }}
-      >
-        <div
-          className="relative flex-1 lg:flex-none lg:w-[65%] min-h-[40vh] lg:min-h-screen"
-          style={{ backgroundColor: "#050505" }}
-        >
-          <VaultDoor3D
-            state={unlockState}
-            className="absolute inset-0"
-          />
+      <div className="relative h-full w-full flex flex-col lg:flex-row">
+        <div className="relative flex-none h-[60%] max-[640px]:h-[45%] lg:h-screen lg:flex-none lg:w-[65%] bg-black">
+          <AnimatePresence>
+            {!videoReady ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: EASE_VAULT }}
+                className="absolute inset-0 flex items-center justify-center bg-black z-10"
+              >
+                <span className="label-eyebrow text-vault-graphite-light">
+                  LOADING VAULT ENVIRONMENT
+                </span>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
-          <div className="pointer-events-none absolute bottom-[9%] left-0 right-0 h-10 flex items-center justify-center px-6 z-10">
-            <AnimatePresence mode="wait">
-              {currentStatus ? (
-                <motion.span
-                  key={currentStatus}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35, ease: EASE_VAULT }}
-                  className={cn(
-                    statusKey === "opening-unsealed"
-                      ? "font-display italic font-light text-lg text-vault-gold tracking-tighter-alt"
-                      : "font-sans text-[11px] uppercase tracking-wider-alt font-semibold text-vault-gold"
-                  )}
-                >
-                  {currentStatus}
-                </motion.span>
-              ) : null}
-            </AnimatePresence>
-          </div>
+          {videoReady ? (
+            <CinematicVault state={unlockState} className="absolute inset-0" />
+          ) : null}
         </div>
 
         <motion.div
           variants={columnVariants}
           initial="initial"
           animate="animate"
-          className="relative flex-1 lg:flex-none lg:w-[35%] flex flex-col justify-center items-start px-8 sm:px-12 lg:px-14 py-10 lg:py-0 lg:min-h-screen gap-0"
+          className="relative flex-1 lg:flex-none lg:w-[35%] flex flex-col justify-center items-start px-8 sm:px-12 lg:px-14 py-10 lg:py-0 lg:min-h-screen"
+          style={{
+            opacity: rightPanelFading ? 0 : 1,
+            transition: `opacity 0.4s cubic-bezier(0.25,0.1,0.25,1) ${
+              unlockState === "opening" ? "0.5s" : "0s"
+            }`,
+          }}
         >
           <motion.div
             variants={itemVariants}
@@ -275,7 +229,7 @@ export default function Login() {
             </span>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mt-14">
+          <motion.div variants={itemVariants} className="mt-12">
             <h1 className="font-display font-light text-5xl text-vault-paper tracking-tightest leading-[0.95]">
               AttorneyVault
             </h1>
@@ -295,7 +249,7 @@ export default function Login() {
 
           <motion.div
             variants={itemVariants}
-            className="mt-12 w-full max-w-md space-y-5"
+            className="mt-12 w-full max-w-[400px] space-y-5"
           >
             <DarkInput
               label="Operator ID"
@@ -319,7 +273,10 @@ export default function Login() {
             />
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mt-8 w-full max-w-md">
+          <motion.div
+            variants={itemVariants}
+            className="mt-8 w-full max-w-[400px]"
+          >
             <button
               type="button"
               tabIndex={3}
@@ -363,7 +320,7 @@ export default function Login() {
             </p>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
 
       <button
         type="button"
@@ -374,32 +331,11 @@ export default function Login() {
         SKIP INTRO →
       </button>
 
-      <AnimatePresence>
-        {unlockState === "opening" ? (
-          <motion.div
-            aria-hidden
-            key="gold-bg-flash"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.1, 0] }}
-            transition={{ duration: 0.5, ease: EASE_VAULT }}
-            className="absolute inset-0 bg-vault-gold pointer-events-none z-[15]"
-          />
-        ) : null}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {unlockState === "unlocked" ? (
-          <motion.div
-            aria-hidden
-            key="forest-wash"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.35 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: EASE_VAULT }}
-            className="absolute inset-0 bg-vault-forest pointer-events-none z-20"
-          />
-        ) : null}
-      </AnimatePresence>
+      <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex justify-center z-20">
+        <span className="label-eyebrow text-vault-graphite">
+          EST. 2026 · BAD BOYS BAIL BONDS
+        </span>
+      </div>
     </div>
   );
 }

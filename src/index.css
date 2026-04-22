@@ -81,3 +81,12 @@
     background-position: 200% 0;
   }
 }
+
+@keyframes cinematic-dolly {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
