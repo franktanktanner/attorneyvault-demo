@@ -30,7 +30,7 @@ import {
   type AttorneyTier,
   type BbbOffice,
 } from "../lib/mockData";
-import { cn, formatCurrency } from "../lib/utils";
+import { cn, formatCompactCurrency } from "../lib/utils";
 
 const SPARK_VOLUME = [8, 9, 11, 10, 13, 14, 12, 15, 17, 16, 19, 21];
 const SPARK_REFERRERS = [72, 74, 78, 81, 82, 84, 85, 86, 88, 87, 89, 89];
@@ -163,20 +163,6 @@ function countActiveFilters(filters: ActiveFilters): number {
     filters.office.length +
     filters.practiceAreas.length
   );
-}
-
-function formatCompactCurrency(value: number): string {
-  if (value === 0) return "$0";
-  if (value >= 1_000_000) {
-    const m = value / 1_000_000;
-    const fixed = m >= 10 ? m.toFixed(1) : m.toFixed(2);
-    return `$${fixed.replace(/\.?0+$/, "")}M`;
-  }
-  if (value >= 1_000) {
-    const k = value / 1_000;
-    return `$${k.toFixed(0)}K`;
-  }
-  return formatCurrency(value);
 }
 
 function daysSince(iso: string): number {

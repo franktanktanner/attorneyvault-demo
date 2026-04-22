@@ -23,16 +23,26 @@ function formatDisplay(
   value: number,
   format: StatTileProps["format"],
   prefix?: string,
-  suffix?: string
+  suffix?: string,
+  compact?: boolean
 ): string {
   let body: string;
   if (format === "currency") {
-    body = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Math.round(value));
+    if (compact) {
+      body = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }).format(value);
+    } else {
+      body = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.round(value));
+    }
   } else if (format === "percent") {
     body = `${(value * 100).toFixed(1)}%`;
   } else {
@@ -79,6 +89,8 @@ export function StatTile({
 
   const sparkData = (sparkline ?? []).map((v, i) => ({ i, v }));
 
+  const compactCurrency = format === "currency" && value >= 1_000_000;
+
   const deltaColor =
     delta?.positive === true
       ? "text-vault-forest"
@@ -102,7 +114,7 @@ export function StatTile({
       <div className="flex-1 min-w-0">
         <p className="label-eyebrow">{label}</p>
         <p className="mt-5 font-display font-light text-5xl num-mono text-vault-ink leading-none tracking-tighter-alt">
-          {formatDisplay(display, format, prefix, suffix)}
+          {formatDisplay(display, format, prefix, suffix, compactCurrency)}
         </p>
         {delta ? (
           <p className={cn("mt-4 label-eyebrow-strong", deltaColor)}>
