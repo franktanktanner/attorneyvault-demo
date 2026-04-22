@@ -903,17 +903,17 @@ function VaultIntelligence({
 
       <div>
         <p className="label-eyebrow">AI-DRAFTED FOLLOW-UP</p>
-        <div className="mt-3 border border-vault-hairline rounded-[4px] p-4 bg-vault-paper-deep">
+        <div className="mt-3 border border-vault-hairline rounded-[4px] px-4 pt-4 pb-5 bg-vault-paper-deep">
           <p className="label-eyebrow">Subject</p>
-          <p className="mt-1 font-sans text-sm text-vault-ink">
+          <p className="mt-1 font-sans text-sm text-vault-ink break-words">
             {email.subject}
           </p>
           <div className="mt-3 h-px w-full bg-vault-hairline" />
-          <p className="mt-3 text-sm text-vault-ink leading-relaxed whitespace-pre-line">
+          <p className="mt-3 text-sm text-vault-ink leading-relaxed whitespace-pre-line break-words">
             {email.body}
           </p>
         </div>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
           <Button variant="secondary" size="sm">
             Edit & Send
           </Button>
