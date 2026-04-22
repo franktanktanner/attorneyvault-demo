@@ -12,6 +12,7 @@ export interface StatTileProps {
   delta?: {
     value: string;
     direction: "up" | "down" | "flat";
+    positive?: boolean;
   };
   sparkline?: number[];
   className?: string;
@@ -79,7 +80,9 @@ export function StatTile({
   const sparkData = (sparkline ?? []).map((v, i) => ({ i, v }));
 
   const deltaColor =
-    delta?.direction === "up"
+    delta?.positive === true
+      ? "text-vault-forest"
+      : delta?.direction === "up"
       ? "text-vault-forest"
       : delta?.direction === "down"
       ? "text-vault-oxblood"

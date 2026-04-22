@@ -16,12 +16,17 @@ export default function AttorneyProfile() {
       <header className="flex items-start justify-between gap-10">
         <div>
           <p className="label-eyebrow">
-            ROLODEX · ATTORNEY PROFILE · {attorney.city.toUpperCase()}
+            ATTORNEY PROFILE · VAULT RECORD
           </p>
           <h1 className="mt-4 font-display font-light text-6xl text-vault-ink tracking-tightest leading-[0.95]">
             {attorney.name}
           </h1>
-          <p className="mt-3 text-lg text-vault-graphite">{attorney.firm}</p>
+          <p className="mt-3 text-lg text-vault-graphite">
+            {attorney.firm} · {attorney.city}, {attorney.county} County
+          </p>
+          <p className="mt-2 text-sm text-vault-graphite-light">
+            Full profile deep dive shipping in next build.
+          </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Badge
               variant={
