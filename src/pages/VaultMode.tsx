@@ -1,13 +1,144 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
-import { Download, Filter, Lock } from "lucide-react";
+import { ChevronDown, Download, Filter, Lock } from "lucide-react";
 
 import { PageShell } from "../components/layout/PageShell";
+import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { attorneys } from "../lib/mockData";
 import { cn } from "../lib/utils";
+
+type TeamAccess = "all" | "general-gold" | "general";
+
+interface TeamMember {
+  id: string;
+  name: string;
+  initials: string;
+  roleLabel: string;
+  access: TeamAccess;
+  accessLabel: string;
+  sub: string;
+  dotClass: string;
+  avatarClass: string;
+}
+
+const TEAM: TeamMember[] = [
+  {
+    id: "cjs",
+    name: "C. Jeffrey Stanley",
+    initials: "CJS",
+    roleLabel: "PRINCIPAL",
+    access: "all",
+    accessLabel: "ALL ZONES",
+    sub: "Owner · unrestricted",
+    dotClass: "bg-vault-gold",
+    avatarClass: "bg-vault-gold text-vault-paper",
+  },
+  {
+    id: "cs",
+    name: "Cindy Stanley",
+    initials: "CS",
+    roleLabel: "LIEUTENANT",
+    access: "general-gold",
+    accessLabel: "GENERAL + GOLD",
+    sub: "Co-principal · trusted",
+    dotClass: "bg-vault-forest",
+    avatarClass: "bg-vault-graphite text-vault-paper",
+  },
+  {
+    id: "mb",
+    name: "Marta Beltran",
+    initials: "MB",
+    roleLabel: "OPERATIONS",
+    access: "general-gold",
+    accessLabel: "GENERAL + GOLD",
+    sub: "Concierge desk lead",
+    dotClass: "bg-vault-forest",
+    avatarClass: "bg-vault-graphite text-vault-paper",
+  },
+  {
+    id: "ae",
+    name: "Arman Elliott",
+    initials: "AE",
+    roleLabel: "INTAKE",
+    access: "general",
+    accessLabel: "GENERAL",
+    sub: "San Jose intake",
+    dotClass: "bg-vault-forest",
+    avatarClass: "bg-vault-graphite text-vault-paper",
+  },
+  {
+    id: "nw",
+    name: "Nia Waterston",
+    initials: "NW",
+    roleLabel: "RELATIONSHIP",
+    access: "general",
+    accessLabel: "GENERAL",
+    sub: "LA relationship desk",
+    dotClass: "bg-vault-forest",
+    avatarClass: "bg-vault-graphite text-vault-paper",
+  },
+];
+
+type ZoneKey = "general" | "gold" | "platinum";
+
+const ZONES: Array<{
+  key: ZoneKey;
+  name: string;
+  descriptor: string;
+  dot: string;
+  label: string;
+  labelColor: string;
+  filter: (member: TeamMember) => boolean;
+  footnote?: { text: string; accent?: "gold" | "graphite"; lock?: boolean };
+}> = [
+  {
+    key: "general",
+    name: "General Vault",
+    descriptor: "All 247 attorneys · open access",
+    dot: "bg-vault-forest",
+    label: "ACTIVE",
+    labelColor: "text-vault-forest",
+    filter: () => true,
+  },
+  {
+    key: "gold",
+    name: "Gold Vault",
+    descriptor: "Top 47 · elevated permissions",
+    dot: "bg-vault-gold",
+    label: "ELEVATED",
+    labelColor: "text-vault-gold",
+    filter: (m) => m.access === "all" || m.access === "general-gold",
+    footnote: {
+      text: "Intake and Relationship roles excluded by default",
+      accent: "graphite",
+    },
+  },
+  {
+    key: "platinum",
+    name: "Platinum Vault",
+    descriptor: "Top 12 · principal-only",
+    dot: "bg-vault-gold",
+    label: "PRINCIPAL",
+    labelColor: "text-vault-gold",
+    filter: (m) => m.access === "all",
+    footnote: {
+      text: "Principal-only · no delegation",
+      accent: "gold",
+      lock: true,
+    },
+  },
+];
+
+function accessBadgeVariant(
+  access: TeamAccess
+): "gold" | "forest" | "outline" {
+  if (access === "all") return "gold";
+  if (access === "general-gold") return "forest";
+  return "outline";
+}
 
 const EASE_VAULT: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
@@ -144,6 +275,182 @@ function formatSessionRemaining(seconds: number): string {
   const m = Math.floor(safe / 60).toString().padStart(2, "0");
   const s = (safe % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
+}
+
+function TeamAccessCard() {
+  return (
+    <Card padding="md">
+      <div className="flex items-center justify-between">
+        <p className="label-eyebrow">TEAM ACCESS · {TEAM.length} ACTIVE</p>
+      </div>
+      <h3 className="mt-3 font-display text-lg text-vault-ink tracking-tighter-alt font-medium">
+        Authorized Users
+      </h3>
+      <div className="mt-5 divide-y divide-vault-hairline">
+        {TEAM.map((member) => (
+          <div
+            key={member.id}
+            className="flex items-center justify-between gap-3 py-3"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={cn(
+                  "h-8 w-8 rounded-full flex items-center justify-center font-display text-[11px] font-light shrink-0",
+                  member.avatarClass
+                )}
+              >
+                {member.initials}
+              </div>
+              <div className="min-w-0">
+                <p className="font-sans text-sm text-vault-ink font-medium truncate">
+                  {member.name}
+                </p>
+                <p className="label-eyebrow truncate">{member.roleLabel}</p>
+                <p className="font-sans text-[11px] text-vault-graphite-light truncate">
+                  {member.sub}
+                </p>
+              </div>
+            </div>
+            <Badge variant={accessBadgeVariant(member.access)}>
+              {member.accessLabel}
+            </Badge>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 pt-4 border-t border-vault-hairline space-y-2">
+        <Button variant="ghost" size="sm">
+          + Invite Team Member
+        </Button>
+        <p className="font-sans text-[11px] text-vault-graphite-light leading-relaxed">
+          Invitations expire in 72h. All access logged.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+function VaultZonesCard() {
+  const [expanded, setExpanded] = useState<ZoneKey | null>(null);
+  return (
+    <Card padding="md">
+      <p className="label-eyebrow">VAULT ZONES</p>
+      <div className="mt-5 space-y-3">
+        {ZONES.map((zone) => {
+          const isOpen = expanded === zone.key;
+          const members = TEAM.filter(zone.filter);
+          return (
+            <div
+              key={zone.key}
+              className="border-b border-vault-hairline last:border-0 overflow-hidden"
+            >
+              <button
+                type="button"
+                onClick={() => setExpanded(isOpen ? null : zone.key)}
+                aria-expanded={isOpen}
+                className="w-full flex items-start justify-between gap-3 pb-3 text-left group"
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full mt-1.5",
+                      zone.dot
+                    )}
+                  />
+                  <div>
+                    <p className="font-sans text-sm text-vault-ink font-medium group-hover:text-vault-forest transition-colors duration-500 ease-vault">
+                      {zone.name}
+                    </p>
+                    <p className="label-eyebrow text-vault-graphite-light">
+                      {zone.descriptor}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <p
+                    className={cn(
+                      "label-eyebrow-strong",
+                      zone.labelColor
+                    )}
+                  >
+                    {zone.label}
+                  </p>
+                  <motion.span
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: EASE_VAULT }}
+                    className="text-vault-graphite"
+                  >
+                    <ChevronDown strokeWidth={1.5} size={14} />
+                  </motion.span>
+                </div>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen ? (
+                  <motion.div
+                    key="content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASE_VAULT }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mb-3 bg-vault-paper-deep border border-vault-hairline rounded-[4px] p-4">
+                      <div className="divide-y divide-vault-hairline">
+                        {members.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
+                          >
+                            <div
+                              className={cn(
+                                "h-6 w-6 rounded-full flex items-center justify-center font-display text-[9px] font-light shrink-0",
+                                member.avatarClass
+                              )}
+                            >
+                              {member.initials}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-sans text-sm text-vault-ink truncate">
+                                {member.name}
+                              </p>
+                            </div>
+                            <p className="label-eyebrow text-vault-graphite-light">
+                              {member.roleLabel}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      {zone.footnote ? (
+                        <div className="mt-3 pt-3 border-t border-vault-hairline flex items-center gap-2">
+                          {zone.footnote.lock ? (
+                            <Lock
+                              strokeWidth={1.5}
+                              size={11}
+                              className="text-vault-gold shrink-0"
+                            />
+                          ) : null}
+                          <p
+                            className={cn(
+                              "font-sans text-[11px] leading-relaxed",
+                              zone.footnote.accent === "gold"
+                                ? "text-vault-gold"
+                                : "text-vault-graphite-light"
+                            )}
+                          >
+                            {zone.footnote.text}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
 }
 
 const VERSION_HISTORY = [
@@ -290,59 +597,8 @@ export default function VaultMode() {
         </div>
 
         <aside className="space-y-6">
-          <Card padding="md">
-            <p className="label-eyebrow">VAULT ZONES</p>
-            <div className="mt-5 space-y-4">
-              {[
-                {
-                  name: "General Vault",
-                  descriptor: "All 247 attorneys · open access",
-                  dot: "bg-vault-forest",
-                  label: "ACTIVE",
-                  labelColor: "text-vault-forest",
-                },
-                {
-                  name: "Gold Vault",
-                  descriptor: "Top 47 · elevated permissions",
-                  dot: "bg-vault-gold",
-                  label: "ELEVATED",
-                  labelColor: "text-vault-gold",
-                },
-                {
-                  name: "Platinum Vault",
-                  descriptor: "Top 12 · principal-only",
-                  dot: "bg-vault-gold",
-                  label: "PRINCIPAL",
-                  labelColor: "text-vault-gold",
-                },
-              ].map((zone) => (
-                <div
-                  key={zone.name}
-                  className="flex items-start justify-between gap-3 pb-3 border-b border-vault-hairline last:border-0 last:pb-0"
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full mt-1.5",
-                        zone.dot
-                      )}
-                    />
-                    <div>
-                      <p className="font-sans text-sm text-vault-ink font-medium">
-                        {zone.name}
-                      </p>
-                      <p className="label-eyebrow text-vault-graphite-light">
-                        {zone.descriptor}
-                      </p>
-                    </div>
-                  </div>
-                  <p className={cn("label-eyebrow-strong", zone.labelColor)}>
-                    {zone.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <TeamAccessCard />
+          <VaultZonesCard />
 
           <Card padding="md">
             <p className="label-eyebrow">ENCRYPTED EXPORT</p>
