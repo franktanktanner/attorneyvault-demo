@@ -22,7 +22,7 @@ const EASE_VAULT_SLOW: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const SEQUENCE_MS = {
   verifying: 600,
   decrypting: 1000,
-  opening: 1200,
+  opening: 2000,
   unlocked: 300,
 };
 const PRE_UNLOCK_MS =
@@ -211,7 +211,7 @@ export default function Login() {
           variants={columnVariants}
           initial="initial"
           animate="animate"
-          className="relative flex-1 lg:flex-none lg:w-[35%] flex flex-col justify-center items-start px-8 sm:px-12 lg:px-14 py-10 lg:py-0 lg:min-h-screen"
+          className="relative flex-1 lg:flex-none lg:w-[35%] flex flex-col justify-center items-start px-8 sm:px-12 lg:px-14 py-10 lg:pt-24 lg:pb-24 lg:min-h-screen"
           style={{
             opacity: rightPanelFading ? 0 : 1,
             transition: `opacity 0.4s cubic-bezier(0.25,0.1,0.25,1) ${
