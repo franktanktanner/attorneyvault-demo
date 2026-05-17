@@ -30,6 +30,20 @@ const SPARK_REFERRERS = [72, 74, 78, 81, 82, 84, 85, 86, 88, 87, 89, 89];
 const SPARK_ACTIVE = [210, 214, 219, 223, 228, 232, 236, 239, 241, 244, 246, 247];
 const SPARK_DORMANT = [48, 46, 44, 43, 41, 39, 38, 37, 36, 35, 34, 34];
 
+const REACTIVATION_LAST_CONTACT = [
+  "1 MO AGO",
+  "5 WK AGO",
+  "6 WK AGO",
+  "2 MO AGO",
+  "2 MO AGO",
+];
+
+const INBOUND_SUMMARIES = [
+  "Referred federal white collar matter, $280K bond posted",
+  "Referred PC 187 homicide co-signer, $145K bond",
+  "Referred multi-defendant trafficking case, $410K aggregate",
+];
+
 const TIER_BADGE: Record<AttorneyTier, "gold" | "neutral" | "outline" | "oxblood"> = {
   platinum: "gold",
   gold: "gold",
@@ -135,9 +149,11 @@ function iconFor(kind: BriefingItem["kind"]) {
 
 function ReactivationRow({
   attorney,
+  lastContactLabel,
   onOpen,
 }: {
   attorney: Attorney;
+  lastContactLabel: string;
   onOpen: () => void;
 }) {
   return (
@@ -162,7 +178,7 @@ function ReactivationRow({
       </div>
       <div className="hidden md:flex flex-col items-end shrink-0">
         <p className="label-eyebrow-strong text-vault-ink">
-          {formatRelativeShort(daysSince(attorney.lastContactDate))}
+          {lastContactLabel}
         </p>
         <p className="label-eyebrow text-vault-graphite-light">LAST CONTACT</p>
       </div>
@@ -380,10 +396,14 @@ export default function VaultHome() {
             </button>
           </div>
           <div className="mt-2">
-            {reactivation.map((attorney) => (
+            {reactivation.map((attorney, idx) => (
               <ReactivationRow
                 key={attorney.id}
                 attorney={attorney}
+                lastContactLabel={
+                  REACTIVATION_LAST_CONTACT[idx] ??
+                  formatRelativeShort(daysSince(attorney.lastContactDate))
+                }
                 onOpen={() => navigate(`/attorney/${attorney.id}`)}
               />
             ))}
@@ -400,11 +420,11 @@ export default function VaultHome() {
             </div>
           </div>
           <div className="mt-2">
-            {recentInbound.map(({ entry, attorney }) => (
+            {recentInbound.map(({ entry, attorney }, idx) => (
               <InboundRow
                 key={entry.id}
                 attorney={attorney}
-                summary={entry.summary}
+                summary={INBOUND_SUMMARIES[idx] ?? entry.summary}
                 channel={entry.channel}
                 iso={entry.timestamp}
                 onOpen={() => navigate(`/attorney/${attorney.id}`)}
