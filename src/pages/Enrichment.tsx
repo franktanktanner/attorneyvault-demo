@@ -11,6 +11,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { StatTile } from "../components/ui/StatTile";
 import { cn } from "../lib/utils";
+import { useToast } from "../hooks/useToast";
 
 const EASE_VAULT: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
@@ -104,98 +105,54 @@ interface ActivityEntry {
   message: string;
 }
 
-const ACTIVITY: ActivityEntry[] = [
-  {
-    timestamp: "4/21 14:22",
-    source: "BAR REGISTRY",
-    message: "Admission verified for 3 new network prospects",
-  },
-  {
-    timestamp: "4/21 09:14",
-    source: "COURT DOCKETS",
-    message: "New filing indexed for C. Jeffrey Stanley at Santa Clara Superior",
-  },
-  {
-    timestamp: "4/20 17:45",
-    source: "EDITORIAL",
-    message: "Recorder mention tagged and linked to Imani Kozlowski",
-  },
-  {
-    timestamp: "4/20 15:10",
-    source: "CONCIERGE",
-    message: "Observation note appended: Darnell Whitfield courthouse cafe routine",
-  },
-  {
-    timestamp: "4/20 11:02",
-    source: "COURT DOCKETS",
-    message: "Counsel of record change detected at USDC ND Cal",
-  },
-  {
-    timestamp: "4/19 18:33",
-    source: "EDITORIAL",
-    message: "Daily Journal profile indexed and linked to Priya Ramanathan",
-  },
-  {
-    timestamp: "4/19 13:28",
-    source: "BAR REGISTRY",
-    message: "Address update confirmed for 14 attorneys",
-  },
-  {
-    timestamp: "4/19 10:04",
-    source: "CONCIERGE",
-    message: "Anniversary milestone flagged: Castaneda 25 years at firm",
-  },
-  {
-    timestamp: "4/18 21:47",
-    source: "COURT DOCKETS",
-    message: "Night sweep: 6 new arraignments indexed across Alameda Superior",
-  },
-  {
-    timestamp: "4/18 16:12",
-    source: "EDITORIAL",
-    message: "Law.com mention indexed for Marisol Castaneda on sentencing reform panel",
-  },
-  {
-    timestamp: "4/18 12:35",
-    source: "BAR REGISTRY",
-    message: "Practice area transition: 2 attorneys added federal criminal certification",
-  },
-  {
-    timestamp: "4/17 19:20",
-    source: "CONCIERGE",
-    message: "Preferred contact window updated for Kamala Brennan: Tuesday mornings",
-  },
-  {
-    timestamp: "4/17 14:55",
-    source: "COURT DOCKETS",
-    message: "Venue migration detected: two white collar matters transferred from SD to ND Cal",
-  },
-  {
-    timestamp: "4/17 11:08",
-    source: "BAR REGISTRY",
-    message: "Obituary sweep clear. No network impact.",
-  },
-  {
-    timestamp: "4/16 22:15",
-    source: "EDITORIAL",
-    message: "LA Times mention indexed for Theodore Brantley on high-profile intake",
-  },
-  {
-    timestamp: "4/16 15:40",
-    source: "CONCIERGE",
-    message: "New trusted advisor noted at Whitfield Trial Group: paralegal Ana Figueroa",
-  },
-  {
-    timestamp: "4/16 09:57",
-    source: "COURT DOCKETS",
-    message: "Motion indexed in People v. Delgado: Marisol Castaneda lead counsel",
-  },
-  {
-    timestamp: "4/15 18:22",
-    source: "BAR REGISTRY",
-    message: "Firm formation detected: new 4-attorney boutique in Redwood City",
-  },
+interface ActivityTemplate {
+  source: string;
+  message: string;
+  daysAgo: number;
+  hour: number;
+  minute: number;
+}
+
+function formatTimestamp(daysAgo: number, hour: number, minute: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  d.setHours(hour, minute, 0, 0);
+  const datePart = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const timePart = `${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes()
+  ).padStart(2, "0")}`;
+  return `${datePart.toUpperCase()} · ${timePart}`;
+}
+
+const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
+  { daysAgo: 0, hour: 14, minute: 22, source: "BAR REGISTRY", message: "Admission verified for 3 new network prospects" },
+  { daysAgo: 0, hour: 9, minute: 14, source: "COURT DOCKETS", message: "New filing indexed for Augustin Mercer at Santa Clara Superior" },
+  { daysAgo: 1, hour: 17, minute: 45, source: "EDITORIAL", message: "Recorder mention tagged and linked to Imani Kozlowski" },
+  { daysAgo: 1, hour: 15, minute: 10, source: "CONCIERGE", message: "Observation note appended: Darnell Whitfield courthouse cafe routine" },
+  { daysAgo: 1, hour: 11, minute: 2, source: "COURT DOCKETS", message: "Counsel of record change detected at USDC ND Cal" },
+  { daysAgo: 2, hour: 18, minute: 33, source: "EDITORIAL", message: "Daily Journal profile indexed and linked to Priya Ramanathan" },
+  { daysAgo: 2, hour: 13, minute: 28, source: "BAR REGISTRY", message: "Address update confirmed for 14 attorneys" },
+  { daysAgo: 2, hour: 10, minute: 4, source: "CONCIERGE", message: "Anniversary milestone flagged: Castaneda 25 years at firm" },
+  { daysAgo: 3, hour: 21, minute: 47, source: "COURT DOCKETS", message: "Night sweep: 6 new arraignments indexed across Alameda Superior" },
+  { daysAgo: 3, hour: 16, minute: 12, source: "EDITORIAL", message: "Law.com mention indexed for Marisol Castaneda on sentencing reform panel" },
+  { daysAgo: 3, hour: 12, minute: 35, source: "BAR REGISTRY", message: "Practice area transition: 2 attorneys added federal criminal certification" },
+  { daysAgo: 4, hour: 19, minute: 20, source: "CONCIERGE", message: "Preferred contact window updated for Kamala Brennan: Tuesday mornings" },
+  { daysAgo: 4, hour: 14, minute: 55, source: "COURT DOCKETS", message: "Venue migration detected: two white collar matters transferred from SD to ND Cal" },
+  { daysAgo: 4, hour: 11, minute: 8, source: "BAR REGISTRY", message: "Obituary sweep clear. No network impact." },
+  { daysAgo: 5, hour: 22, minute: 15, source: "EDITORIAL", message: "LA Times mention indexed for Theodore Brantley on high-profile intake" },
+  { daysAgo: 5, hour: 15, minute: 40, source: "CONCIERGE", message: "New trusted advisor noted at Whitfield Trial Group: paralegal Ana Figueroa" },
+  { daysAgo: 5, hour: 9, minute: 57, source: "COURT DOCKETS", message: "Motion indexed in People v. Delgado: Marisol Castaneda lead counsel" },
+  { daysAgo: 6, hour: 18, minute: 22, source: "BAR REGISTRY", message: "Firm formation detected: new 4-attorney boutique in Redwood City" },
 ];
+
+const ACTIVITY: ActivityEntry[] = ACTIVITY_TEMPLATES.map((tpl) => ({
+  timestamp: formatTimestamp(tpl.daysAgo, tpl.hour, tpl.minute),
+  source: tpl.source,
+  message: tpl.message,
+}));
 
 const SOURCE_ACCENT: Record<string, string> = {
   "BAR REGISTRY": "text-vault-forest",
@@ -205,6 +162,7 @@ const SOURCE_ACCENT: Record<string, string> = {
 };
 
 export default function Enrichment() {
+  const { toast } = useToast();
   return (
     <PageShell>
       <motion.header
@@ -318,7 +276,18 @@ export default function Enrichment() {
                 </div>
 
                 <div className="mt-6 pt-5 border-t border-vault-hairline">
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      toast(
+                        pipeline.eyebrow === "CONCIERGE"
+                          ? "Concierge notes loaded"
+                          : "Pipeline logs loaded",
+                        "info"
+                      )
+                    }
+                  >
                     {pipeline.cta}
                   </Button>
                 </div>
@@ -342,7 +311,7 @@ export default function Enrichment() {
             {ACTIVITY.map((entry, idx) => (
               <div
                 key={idx}
-                className="grid grid-cols-[108px_140px_1fr] items-start gap-4 py-3"
+                className="grid grid-cols-[140px_140px_1fr] items-start gap-4 py-3"
               >
                 <p className="font-mono text-[11px] uppercase tracking-wider-alt text-vault-graphite-light">
                   {entry.timestamp}

@@ -30,6 +30,7 @@ import {
   type BbbOffice,
 } from "../lib/mockData";
 import { cn, formatCompactCurrency } from "../lib/utils";
+import { useToast } from "../hooks/useToast";
 
 // ============================================================================
 // Constants
@@ -742,7 +743,13 @@ function TimelineEntry({ entry }: { entry: TimelineRow }) {
   );
 }
 
-function TimelineSection({ timeline }: { timeline: TimelineRow[] }) {
+function TimelineSection({
+  timeline,
+  onViewFullTimeline,
+}: {
+  timeline: TimelineRow[];
+  onViewFullTimeline: () => void;
+}) {
   return (
     <section>
       <SectionHeader label="RELATIONSHIP TIMELINE · LAST 12 MONTHS" />
@@ -752,7 +759,7 @@ function TimelineSection({ timeline }: { timeline: TimelineRow[] }) {
         ))}
       </div>
       <div className="mt-6">
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" onClick={onViewFullTimeline}>
           View Full Timeline →
         </Button>
       </div>
@@ -837,10 +844,16 @@ function VaultIntelligence({
   health,
   action,
   email,
+  onDraftAction,
+  onEditSend,
+  onRegenerate,
 }: {
   health: HealthState;
   action: { title: string; reason: string };
   email: { subject: string; body: string };
+  onDraftAction: () => void;
+  onEditSend: () => void;
+  onRegenerate: () => void;
 }) {
   return (
     <Card padding="md">
@@ -893,7 +906,7 @@ function VaultIntelligence({
           {action.reason}
         </p>
         <div className="mt-4">
-          <Button variant="primary" size="sm">
+          <Button variant="primary" size="sm" onClick={onDraftAction}>
             Draft The Action →
           </Button>
         </div>
@@ -914,10 +927,10 @@ function VaultIntelligence({
           </p>
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Button variant="secondary" size="sm">
+          <Button variant="secondary" size="sm" onClick={onEditSend}>
             Edit & Send
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={onRegenerate}>
             Regenerate
           </Button>
         </div>
@@ -1013,7 +1026,13 @@ function ContactCard({ attorney }: { attorney: Attorney }) {
   );
 }
 
-function MetadataCard({ attorney }: { attorney: Attorney }) {
+function MetadataCard({
+  attorney,
+  onManageTags,
+}: {
+  attorney: Attorney;
+  onManageTags: () => void;
+}) {
   const manager = OFFICE_MANAGER[attorney.ownerOffice];
   const admittedYear = formatAdmittedYear(attorney.yearsAdmitted);
 
@@ -1061,7 +1080,7 @@ function MetadataCard({ attorney }: { attorney: Attorney }) {
           </p>
         </div>
         <div>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={onManageTags}>
             Manage Tags
           </Button>
         </div>
@@ -1070,7 +1089,13 @@ function MetadataCard({ attorney }: { attorney: Attorney }) {
   );
 }
 
-function AuditSection({ rows }: { rows: AuditRow[] }) {
+function AuditSection({
+  rows,
+  onViewFullAudit,
+}: {
+  rows: AuditRow[];
+  onViewFullAudit: () => void;
+}) {
   return (
     <section className="mt-14">
       <Card padding="md">
@@ -1099,7 +1124,7 @@ function AuditSection({ rows }: { rows: AuditRow[] }) {
           ))}
         </div>
         <div className="mt-6">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={onViewFullAudit}>
             View Full Audit in Vault Mode →
           </Button>
         </div>
@@ -1108,24 +1133,22 @@ function AuditSection({ rows }: { rows: AuditRow[] }) {
   );
 }
 
-function StickyActionBar() {
-  const actions: Array<{
-    label: string;
-    Icon: typeof Edit;
-  }> = [
-    { label: "Edit profile", Icon: Edit },
-    { label: "Log new contact", Icon: MessageSquare },
-    { label: "Schedule follow-up", Icon: Calendar },
-    { label: "Download profile", Icon: Download },
-  ];
+interface StickyActionItem {
+  label: string;
+  Icon: typeof Edit;
+  onClick: () => void;
+}
+
+function StickyActionBar({ actions }: { actions: StickyActionItem[] }) {
   return (
     <div className="hidden lg:flex flex-col fixed right-6 top-1/2 -translate-y-1/2 z-20 bg-vault-paper border border-vault-hairline rounded-[4px] overflow-hidden">
-      {actions.map(({ label, Icon }, index) => (
+      {actions.map(({ label, Icon, onClick }, index) => (
         <button
           key={label}
           type="button"
           aria-label={label}
           title={label}
+          onClick={onClick}
           className={cn(
             "h-11 w-11 flex items-center justify-center text-vault-graphite hover:text-vault-ink hover:bg-vault-paper-deep transition-colors duration-500 ease-vault",
             index > 0 && "border-t border-vault-hairline"
@@ -1173,6 +1196,7 @@ function NotInVault() {
 export default function AttorneyProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const attorney = useMemo(
     () => attorneys.find((a) => a.id === id),
     [id]
@@ -1233,7 +1257,10 @@ export default function AttorneyProfile() {
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-12">
         <div>
-          <TimelineSection timeline={timeline} />
+          <TimelineSection
+            timeline={timeline}
+            onViewFullTimeline={() => toast("Full timeline loading", "info")}
+          />
           <BondsSection bonds={bonds} />
         </div>
         <div className="space-y-6">
@@ -1241,15 +1268,52 @@ export default function AttorneyProfile() {
             health={health}
             action={nextAction}
             email={email}
+            onDraftAction={() => toast("Drafted · review in Outbox", "success")}
+            onEditSend={() =>
+              toast("Opened in compose · ready to send", "info")
+            }
+            onRegenerate={() =>
+              toast("Regenerating with latest signals...", "pending")
+            }
           />
           <ContactCard attorney={attorney} />
-          <MetadataCard attorney={attorney} />
+          <MetadataCard
+            attorney={attorney}
+            onManageTags={() => toast("Tag editor opened", "info")}
+          />
         </div>
       </div>
 
-      <AuditSection rows={audit} />
+      <AuditSection
+        rows={audit}
+        onViewFullAudit={() => navigate("/vault-mode")}
+      />
 
-      <StickyActionBar />
+      <StickyActionBar
+        actions={[
+          {
+            label: "Edit profile",
+            Icon: Edit,
+            onClick: () => toast("Profile open in editor", "info"),
+          },
+          {
+            label: "Log new contact",
+            Icon: MessageSquare,
+            onClick: () => toast("Contact logged · entered audit trail", "success"),
+          },
+          {
+            label: "Schedule follow-up",
+            Icon: Calendar,
+            onClick: () => toast("Calendar opened in new tab", "info"),
+          },
+          {
+            label: "Download profile",
+            Icon: Download,
+            onClick: () =>
+              toast("Profile PDF queued · check Reports", "pending"),
+          },
+        ]}
+      />
     </PageShell>
   );
 }

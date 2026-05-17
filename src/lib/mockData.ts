@@ -227,8 +227,8 @@ interface Seed {
 const SEEDS: Seed[] = [
   // PLATINUM (5)
   {
-    name: "C. Jeffrey Stanley",
-    firm: "Stanley & Reyes Defense Group",
+    name: "Augustin Mercer",
+    firm: "Mercer Trial Group",
     city: "San Jose",
     areas: ["Violent Crimes", "White Collar", "Federal"],
     tier: "platinum",

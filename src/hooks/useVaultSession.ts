@@ -1,26 +1,20 @@
-import { useEffect, useState } from "react";
+import { useVaultSessionContext } from "../contexts/VaultSessionContext";
 
 export interface VaultSessionState {
   secondsRemaining: number;
   locked: boolean;
   warning: boolean;
+  formatted: string;
+  reset: () => void;
 }
 
-const SESSION_SECONDS = 10 * 60;
-
 export function useVaultSession(): VaultSessionState {
-  const [secondsRemaining, setSecondsRemaining] = useState(SESSION_SECONDS);
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setSecondsRemaining((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(interval);
-  }, []);
-
+  const { remainingSeconds, reset, formatted } = useVaultSessionContext();
   return {
-    secondsRemaining,
-    locked: secondsRemaining <= 0,
-    warning: secondsRemaining > 0 && secondsRemaining <= 120,
+    secondsRemaining: remainingSeconds,
+    locked: remainingSeconds <= 0,
+    warning: remainingSeconds > 0 && remainingSeconds <= 120,
+    formatted,
+    reset,
   };
 }

@@ -7,6 +7,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { StatTile } from "../components/ui/StatTile";
 import { cn } from "../lib/utils";
+import { useToast } from "../hooks/useToast";
 
 const EASE_VAULT: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
@@ -187,6 +188,19 @@ function formatRelative(iso: string): string {
 }
 
 export default function Reports() {
+  const { toast } = useToast();
+
+  const generatorToastFor = (eyebrow: string) => {
+    if (eyebrow === "QUARTERLY BRIEF") {
+      return () =>
+        toast("Generating brief · check Outbox in 2 min", "pending");
+    }
+    if (eyebrow === "ATTORNEY LEDGER") {
+      return () => toast("Attorney selector opened", "info");
+    }
+    return () => toast("Office selector opened", "info");
+  };
+
   return (
     <PageShell>
       <motion.header
@@ -280,7 +294,12 @@ export default function Reports() {
                       {gen.meta.toUpperCase()}
                     </p>
                     <div className="mt-4">
-                      <Button variant="primary" size="md" className="w-full">
+                      <Button
+                        variant="primary"
+                        size="md"
+                        className="w-full"
+                        onClick={generatorToastFor(gen.eyebrow)}
+                      >
                         {gen.cta}
                       </Button>
                     </div>
@@ -370,18 +389,23 @@ export default function Reports() {
                     <div className="flex items-center justify-end gap-4">
                       <button
                         type="button"
+                        onClick={() => toast("Download queued", "pending")}
                         className="label-eyebrow-strong text-vault-ink hover:text-vault-forest transition-colors duration-500 ease-vault"
                       >
                         DOWNLOAD
                       </button>
                       <button
                         type="button"
+                        onClick={() => toast("Opening preview", "info")}
                         className="label-eyebrow text-vault-graphite hover:text-vault-ink transition-colors duration-500 ease-vault hidden md:inline-flex"
                       >
                         VIEW
                       </button>
                       <button
                         type="button"
+                        onClick={() =>
+                          toast("Regenerating · using latest data", "pending")
+                        }
                         className="label-eyebrow text-vault-graphite hover:text-vault-ink transition-colors duration-500 ease-vault hidden lg:inline-flex"
                       >
                         REGENERATE

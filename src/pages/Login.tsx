@@ -13,6 +13,7 @@ import {
   type CinematicVaultState,
 } from "../components/vault/CinematicVault";
 import { cn } from "../lib/utils";
+import { useVaultSessionContext } from "../contexts/VaultSessionContext";
 
 type UnlockState = CinematicVaultState;
 
@@ -95,6 +96,7 @@ const itemVariants: Variants = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { reset: resetSession } = useVaultSessionContext();
   const [unlockState, setUnlockState] = useState<UnlockState>("idle");
   const [videoReady, setVideoReady] = useState(false);
   const [operatorId, setOperatorId] = useState("CJS-0001");
@@ -149,11 +151,17 @@ export default function Login() {
       setUnlockState("unlocked");
     });
     schedule(SEQUENCE_TOTAL, () => {
+      sessionStorage.setItem("vault_unlocked", "1");
+      resetSession();
       navigate("/vault");
     });
   };
 
-  const skipIntro = () => navigate("/vault");
+  const skipIntro = () => {
+    sessionStorage.setItem("vault_unlocked", "1");
+    resetSession();
+    navigate("/vault");
+  };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && unlockState === "idle") {

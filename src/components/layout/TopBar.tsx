@@ -36,7 +36,10 @@ export function TopBar() {
             variant="ghost"
             size="sm"
             icon={<Lock size={12} strokeWidth={1.8} />}
-            onClick={() => navigate("/")}
+            onClick={() => {
+              sessionStorage.removeItem("vault_unlocked");
+              navigate("/");
+            }}
           >
             Lock Vault
           </Button>

@@ -24,6 +24,7 @@ import {
   type AttorneyTier,
 } from "../lib/mockData";
 import { cn } from "../lib/utils";
+import { useToast } from "../hooks/useToast";
 
 const EASE_VAULT: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
@@ -305,6 +306,7 @@ type Filter = (typeof FILTERS)[number];
 
 export default function Pipeline() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [stageMap, setStageMap] = useState<Record<string, Stage>>(() => {
     const initial: Record<string, Stage> = {};
     for (const a of attorneys) initial[a.id] = defaultStage(a);
@@ -426,6 +428,7 @@ export default function Pipeline() {
             variant="primary"
             size="sm"
             icon={<Plus strokeWidth={1.8} size={14} />}
+            onClick={() => toast("Add Attorney panel coming online", "info")}
           >
             Add Attorney
           </Button>

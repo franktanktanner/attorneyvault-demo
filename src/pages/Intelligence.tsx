@@ -477,64 +477,71 @@ interface CourtEvent {
   insight: string;
 }
 
-const COURT_EVENTS: CourtEvent[] = [
+function shortDate(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d
+    .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    .toUpperCase();
+}
+
+const COURT_EVENT_OFFSETS = [0, 0, 1, 1, 2, 3, 3, 4];
+
+const COURT_EVENT_TEMPLATES: Array<Omit<CourtEvent, "date">> = [
   {
     court: "LASC Dept 120",
-    date: "4/21",
     headline: "Federal arraignment calendar up 15% vs prior week",
     insight:
       "Two high-volume Los Angeles attorneys have filed notices of appearance. Ramanathan Defense LLP is absent from the calendar for the first time in six weeks.",
   },
   {
     court: "USDC ND Cal",
-    date: "4/21",
     headline: "New indictments: 4 federal white collar matters filed",
     insight:
       "One matter matches a white collar practice area profile owned by the Redwood City office. Okonkwo Law Offices is historically competitive for federal bail counsel in this docket.",
   },
   {
     court: "Alameda Superior",
-    date: "4/20",
     headline: "6 new felony cases with no counsel assigned",
     insight:
       "Public defender conflict roster shows capacity pressure. Private intake opportunity for Oakland-owned attorneys this week.",
   },
   {
     court: "San Diego Superior",
-    date: "4/20",
     headline: "Three violent crimes arraignments rescheduled to Thursday",
     insight:
       "Whitfield Trial Group is on the appearance sheet for all three. Bail hearings likely to cluster Thursday afternoon.",
   },
   {
     court: "OC Superior · Westminster",
-    date: "4/19",
     headline: "DUI manslaughter case transferred from Central",
     insight:
       "Santa Ana-owned attorneys with DUI manslaughter experience should be flagged. Montrose Trial Advocates historically competes for this profile.",
   },
   {
     court: "Santa Clara Superior",
-    date: "4/18",
     headline: "Gang enhancement ruling issued in People v. Becerra",
     insight:
-      "The ruling narrows enhancement criteria. Relevant for Kerrigan Law Firm and Stanley & Reyes, both of whom have active matters in this category.",
+      "The ruling narrows enhancement criteria. Relevant for Kerrigan Law Firm and Mercer Trial Group, both of whom have active matters in this category.",
   },
   {
     court: "USDC CD Cal",
-    date: "4/18",
     headline: "Two federal wire fraud matters transferred from SD Cal",
     insight:
       "Venue migration flagged. Bail counsel likely to shift to LA-owned attorneys. Castaneda Criminal Defense is best positioned on historical volume.",
   },
   {
     court: "LA Superior · Compton",
-    date: "4/17",
     headline: "Weapons enhancement calendar lighter than usual",
     insight:
       "Opportunity window for attorneys routing lower-volume weapons matters. Brennan Defense Associates typically leads this docket.",
   },
 ];
+
+const COURT_EVENTS: CourtEvent[] = COURT_EVENT_TEMPLATES.map((tpl, i) => ({
+  ...tpl,
+  date: shortDate(COURT_EVENT_OFFSETS[i] ?? i),
+}));
 
 function CourtSignalsTab() {
   return (

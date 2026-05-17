@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
 import { ChevronDown, Download, Filter, Lock } from "lucide-react";
@@ -9,6 +9,8 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { attorneys } from "../lib/mockData";
 import { cn } from "../lib/utils";
+import { useToast } from "../hooks/useToast";
+import { useVaultSessionContext } from "../contexts/VaultSessionContext";
 
 type TeamAccess = "all" | "general-gold" | "general";
 
@@ -270,14 +272,7 @@ function formatClockFromMinutes(minutes: number): string {
     .toUpperCase();
 }
 
-function formatSessionRemaining(seconds: number): string {
-  const safe = Math.max(0, seconds);
-  const m = Math.floor(safe / 60).toString().padStart(2, "0");
-  const s = (safe % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-function TeamAccessCard() {
+function TeamAccessCard({ onInvite }: { onInvite: () => void }) {
   return (
     <Card padding="md">
       <div className="flex items-center justify-between">
@@ -318,7 +313,7 @@ function TeamAccessCard() {
         ))}
       </div>
       <div className="mt-4 pt-4 border-t border-vault-hairline space-y-2">
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" onClick={onInvite}>
           + Invite Team Member
         </Button>
         <p className="font-sans text-[11px] text-vault-graphite-light leading-relaxed">
@@ -463,19 +458,13 @@ const VERSION_HISTORY = [
 
 export default function VaultMode() {
   const [scope, setScope] = useState<"ALL" | "GOLD VAULT" | "CUSTOM">("ALL");
-  const [sessionSeconds, setSessionSeconds] = useState(9 * 60 + 12);
+  const { toast } = useToast();
+  const { formatted, reset } = useVaultSessionContext();
   const rows = useMemo(() => buildAuditLog(), []);
   const versionData = useMemo(
     () => VERSION_HISTORY.map((v, i) => ({ day: i + 1, edits: v })),
     []
   );
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   return (
     <PageShell>
@@ -547,6 +536,7 @@ export default function VaultMode() {
                 variant="ghost"
                 size="sm"
                 icon={<Filter strokeWidth={1.5} size={12} />}
+                onClick={() => toast("Filter panel opened", "info")}
               >
                 Filter Events
               </Button>
@@ -554,6 +544,9 @@ export default function VaultMode() {
                 variant="ghost"
                 size="sm"
                 icon={<Download strokeWidth={1.5} size={12} />}
+                onClick={() =>
+                  toast("Export queued · CSV will download shortly", "pending")
+                }
               >
                 Export Log (CSV)
               </Button>
@@ -597,7 +590,9 @@ export default function VaultMode() {
         </div>
 
         <aside className="space-y-6">
-          <TeamAccessCard />
+          <TeamAccessCard
+            onInvite={() => toast("Invite flow opened", "info")}
+          />
           <VaultZonesCard />
 
           <Card padding="md">
@@ -642,7 +637,17 @@ export default function VaultMode() {
                   )}
                 </div>
               </div>
-              <Button variant="primary" size="md" className="w-full">
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full"
+                onClick={() =>
+                  toast(
+                    "Encrypting export · password sent to principal",
+                    "pending"
+                  )
+                }
+              >
                 Initiate Encrypted Export
               </Button>
               <p className="label-eyebrow text-vault-graphite-light">
@@ -674,7 +679,16 @@ export default function VaultMode() {
             </div>
             <div className="mt-3 flex items-center justify-between">
               <p className="label-eyebrow">LAST SNAPSHOT · 2H AGO</p>
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  toast(
+                    "Restore confirmation sent for approval",
+                    "pending"
+                  )
+                }
+              >
                 Restore From Snapshot
               </Button>
             </div>
@@ -685,17 +699,20 @@ export default function VaultMode() {
             <div className="mt-3 flex items-center gap-3">
               <Lock strokeWidth={1.5} size={14} className="text-vault-ink" />
               <p className="font-display font-light text-3xl text-vault-ink num-mono tracking-tighter-alt">
-                {formatSessionRemaining(sessionSeconds)}
+                {formatted}
               </p>
             </div>
             <p className="mt-2 label-eyebrow text-vault-graphite-light">
-              AUTO-LOCK IN {formatSessionRemaining(sessionSeconds)}
+              AUTO-LOCK IN {formatted}
             </p>
             <div className="mt-4">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSessionSeconds(10 * 60)}
+                onClick={() => {
+                  reset();
+                  toast("Session extended · 10:00 added", "success");
+                }}
               >
                 Extend Session
               </Button>
