@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -21,6 +21,7 @@ import { Card } from "../components/ui/Card";
 import { Divider } from "../components/ui/Divider";
 import { StatTile } from "../components/ui/StatTile";
 import { Tag } from "../components/ui/Tag";
+import { EmailComposeModal } from "../components/vault/EmailComposeModal";
 import { VaultSeal } from "../components/vault/VaultSeal";
 import {
   attorneys,
@@ -1197,6 +1198,7 @@ export default function AttorneyProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [composeOpen, setComposeOpen] = useState(false);
   const attorney = useMemo(
     () => attorneys.find((a) => a.id === id),
     [id]
@@ -1269,9 +1271,7 @@ export default function AttorneyProfile() {
             action={nextAction}
             email={email}
             onDraftAction={() => toast("Drafted · review in Outbox", "success")}
-            onEditSend={() =>
-              toast("Opened in compose · ready to send", "info")
-            }
+            onEditSend={() => setComposeOpen(true)}
             onRegenerate={() =>
               toast("Regenerating with latest signals...", "pending")
             }
@@ -1287,6 +1287,15 @@ export default function AttorneyProfile() {
       <AuditSection
         rows={audit}
         onViewFullAudit={() => navigate("/vault-mode")}
+      />
+
+      <EmailComposeModal
+        open={composeOpen}
+        onClose={() => setComposeOpen(false)}
+        attorneyName={attorney.name}
+        attorneyEmail={attorney.email}
+        initialSubject={email.subject}
+        initialBody={email.body}
       />
 
       <StickyActionBar
